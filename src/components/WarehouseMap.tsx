@@ -1,5 +1,8 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { WarehouseLocation, MoveModeState, decomposeLocationCode } from '../types/warehouse';
+import { getItemVisual } from '../utils/itemVisuals';
+import { ItemShapeBadge } from './ItemShapeBadge';
+import { ItemShapesLegend } from './ItemShapesLegend';
 import { 
   Building2, 
   Milestone, 
@@ -15,7 +18,8 @@ import {
   ChevronUp,
   X,
   Info,
-  AlertTriangle
+  AlertTriangle,
+  Shapes
 } from 'lucide-react';
 
 interface WarehouseMapProps {
@@ -60,10 +64,13 @@ const LocationSlotItem = React.memo<LocationSlotItemProps>(({
   cardDensity,
   onSelect,
 }) => {
+  // Compute unique visual shape & color for this item
+  const itemVisual = isOccupied ? getItemVisual(locData.itemCode, locData.description) : null;
+
   // ── Color System Requested:
   // 1. If clicked or same item -> Bright GREEN (اللون الأخضر)
   // 2. If different item in bay -> Bright RED (اللون الأحمر)
-  // 3. If occupied -> Clean WHITE card with details (اللون الأبيض)
+  // 3. If occupied -> Clean WHITE card with distinct item shape & details (اللون الأبيض + شكل الصنف)
   // 4. If empty -> Truly clean empty slot (لو فاضي خليه فاضي)
 
   let bgStyle = 'bg-slate-50 text-slate-400 border border-dashed border-slate-300 hover:bg-slate-100';
@@ -98,7 +105,7 @@ const LocationSlotItem = React.memo<LocationSlotItemProps>(({
     tag = 'صنف مختلف بالباكية';
     tagClass = 'bg-rose-600 text-white font-bold';
   } else if (isOccupied) {
-    // 3. Normal occupied location: Clean WHITE card
+    // 3. Normal occupied location: Clean WHITE card with distinct shape indicator
     bgStyle = 'bg-white text-slate-900 border border-slate-300 hover:border-slate-400 shadow-2xs hover:bg-slate-50';
     badgeStyle = 'bg-slate-100 text-slate-700 border border-slate-300 font-bold';
   }
@@ -114,10 +121,14 @@ const LocationSlotItem = React.memo<LocationSlotItemProps>(({
     <button
       type="button"
       onClick={() => onSelect(locData)}
+      style={{
+        borderTopColor: isOccupied && !isSelected && !isSameItem && !isDifferentInBay && itemVisual ? itemVisual.primaryColor : undefined,
+        borderTopWidth: isOccupied && !isSelected && !isSameItem && !isDifferentInBay ? '3px' : undefined,
+      }}
       className={`rounded-xl text-right flex flex-col justify-between cursor-pointer select-none transition-transform active:scale-95 ${bgStyle} ${heightClass}`}
       title={
-        isOccupied
-          ? `الموقع: ${locData.location} | كود: ${locData.itemCode} | الصنف: ${locData.description || 'بدون وصف'} ${
+        isOccupied && itemVisual
+          ? `الموقع: ${locData.location} | كود: ${locData.itemCode} | شكل الصنف: ${itemVisual.shapeNameAr} (${itemVisual.colorNameAr}) | الصنف: ${locData.description || 'بدون وصف'} ${
               isDifferentInBay ? '[⚠️ صنف مختلف في هذه الباكية!]' : ''
             }`
           : `الموقع: ${locData.location} | شاغر (EMPTY)`
@@ -147,21 +158,42 @@ const LocationSlotItem = React.memo<LocationSlotItemProps>(({
         )}
       </div>
 
-      {/* 2. Middle Row: Item Code */}
-      {isOccupied ? (
+      {/* 2. Middle Row: Item Code with Distinct Geometric Shape Badge */}
+      {isOccupied && itemVisual ? (
         <div className="my-1 flex items-center justify-between gap-1 w-full">
-          <div className={`font-mono text-xs md:text-sm px-2 py-0.5 rounded-lg border flex items-center gap-1.5 w-full justify-center ${
+          <div className={`font-mono text-xs md:text-sm px-1.5 py-0.5 rounded-lg border flex items-center justify-between gap-1 w-full ${
             isSelected || isSameItem
               ? 'bg-emerald-700/80 text-white border-emerald-400 font-black'
               : isDifferentInBay
               ? 'bg-rose-100 text-rose-950 border-rose-300 font-black'
               : 'bg-slate-100 text-slate-900 border-slate-200 font-bold'
           }`}>
-            {isDifferentInBay && !isSelected && !isSameItem && (
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-            )}
-            <span className="text-[11px] opacity-75 font-sans">كود:</span>
-            <span className="tracking-wide text-sm font-black">{locData.itemCode}</span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              {isDifferentInBay && !isSelected && !isSameItem && (
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+              )}
+              {/* Unique Geometric Shape for this Item */}
+              <ItemShapeBadge 
+                itemCode={locData.itemCode} 
+                description={locData.description} 
+                size={cardDensity === 'compact' ? 'xs' : 'sm'} 
+                shapeOnly 
+              />
+              <span className="tracking-wide text-xs sm:text-sm font-black truncate">{locData.itemCode}</span>
+            </div>
+
+            {/* Shape Name Badge */}
+            <span 
+              className={`text-[9px] font-bold px-1.5 py-0.2 rounded shrink-0 hidden sm:inline-flex items-center gap-0.5 ${
+                isSelected || isSameItem 
+                  ? 'bg-emerald-900/60 text-emerald-100' 
+                  : 'bg-white shadow-2xs'
+              }`}
+              style={{ color: isSelected || isSameItem ? undefined : itemVisual.primaryColor }}
+            >
+              <span className="text-[10px]">{itemVisual.shapeSymbol}</span>
+              <span className="truncate max-w-[65px]">{itemVisual.shapeNameAr}</span>
+            </span>
           </div>
         </div>
       ) : (
@@ -461,7 +493,23 @@ export const WarehouseMap: React.FC<WarehouseMapProps> = ({
 
       </div>
 
-      {/* 2. Highlight Alert Banner: When any location is clicked, highlights all in bright green */}
+      {/* 2. Item Shapes Legend & Quick Selector: Every item has its own distinct shape */}
+      <ItemShapesLegend
+        locations={locations}
+        selectedItemCode={selectedItemCode || null}
+        onSelectItem={(code) => {
+          if (code) {
+            const match = locations.find((l) => l.itemCode && l.itemCode.trim().toLowerCase() === code.toLowerCase());
+            if (match) {
+              onSelectLocation(match);
+            }
+          } else {
+            handleClearSelection();
+          }
+        }}
+      />
+
+      {/* 3. Highlight Alert Banner: When any location is clicked, highlights all in bright green */}
       {selectedItemCode && (
         <div className="bg-emerald-50 border-2 border-emerald-400 text-emerald-950 p-2.5 rounded-xl flex items-center justify-between flex-wrap gap-2 w-full shadow-2xs">
           <div className="flex items-center gap-2 text-xs md:text-sm">
@@ -771,8 +819,11 @@ export const WarehouseMap: React.FC<WarehouseMapProps> = ({
 
                                 const isSourceInMove = moveState.active && moveState.fromLocation === loc.location;
                                 const isValidDest = moveState.active && Boolean(moveState.fromLocation) && !isOccupied;
+                                const locVisual = isOccupied ? getItemVisual(loc.itemCode, loc.description) : null;
                                 const isSearchMatch = Boolean(
                                   (cleanItemSearch && loc.itemCode && loc.itemCode.toLowerCase().includes(cleanItemSearch)) ||
+                                  (cleanItemSearch && loc.description && loc.description.toLowerCase().includes(cleanItemSearch)) ||
+                                  (cleanItemSearch && locVisual && (locVisual.shapeNameAr.toLowerCase().includes(cleanItemSearch) || locVisual.colorNameAr.toLowerCase().includes(cleanItemSearch))) ||
                                   (cleanLocSearch && loc.location.toLowerCase() === cleanLocSearch)
                                 );
 
@@ -832,8 +883,11 @@ export const WarehouseMap: React.FC<WarehouseMapProps> = ({
 
                                 const isSourceInMove = moveState.active && moveState.fromLocation === loc.location;
                                 const isValidDest = moveState.active && Boolean(moveState.fromLocation) && !isOccupied;
+                                const locVisual = isOccupied ? getItemVisual(loc.itemCode, loc.description) : null;
                                 const isSearchMatch = Boolean(
                                   (cleanItemSearch && loc.itemCode && loc.itemCode.toLowerCase().includes(cleanItemSearch)) ||
+                                  (cleanItemSearch && loc.description && loc.description.toLowerCase().includes(cleanItemSearch)) ||
+                                  (cleanItemSearch && locVisual && (locVisual.shapeNameAr.toLowerCase().includes(cleanItemSearch) || locVisual.colorNameAr.toLowerCase().includes(cleanItemSearch))) ||
                                   (cleanLocSearch && loc.location.toLowerCase() === cleanLocSearch)
                                 );
 
@@ -1017,10 +1071,18 @@ export const WarehouseMap: React.FC<WarehouseMapProps> = ({
                   <span className="w-5 h-4 rounded bg-slate-50 border border-dashed border-slate-300 inline-block shrink-0" />
                   <span className="text-slate-500 font-medium">لوكيشن فاضي: موقع شاغر بدون أي صنف</span>
                 </div>
+
+                {/* 5. Shapes */}
+                <div className="flex items-center gap-2 pt-1 border-t border-slate-200">
+                  <span className="w-5 h-5 rounded-md bg-amber-100 text-amber-900 border border-amber-300 inline-flex items-center justify-center shrink-0 text-xs font-bold">
+                    ⬢
+                  </span>
+                  <span className="text-slate-800 font-bold">أشكال هندسية مميزة: كل صنف له شكل وأيقونة ولون فريد</span>
+                </div>
               </div>
             </div>
 
-            {/* Column 3: بيانات الموقع المحدد */}
+            {/* Column 3: بيانات الموقع المحدد وشكل الصنف */}
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
               <h4 className="text-xs font-bold text-slate-800 text-right">
                 {activeLocation ? `الموقع: ${activeLocation.location}` : 'بيانات الموقع'}
@@ -1028,6 +1090,32 @@ export const WarehouseMap: React.FC<WarehouseMapProps> = ({
 
               {activeLocation && activeLocation.itemCode ? (
                 <div className="space-y-1.5 text-xs">
+                  {/* Item Shape Spotlight */}
+                  {(() => {
+                    const visual = getItemVisual(activeLocation.itemCode, activeLocation.description);
+                    return (
+                      <div className="bg-white p-2 rounded-lg border border-slate-200 flex items-center justify-between gap-2 shadow-2xs">
+                        <div className="flex items-center gap-2">
+                          <ItemShapeBadge 
+                            itemCode={activeLocation.itemCode} 
+                            description={activeLocation.description} 
+                            size="md" 
+                            shapeOnly 
+                          />
+                          <div>
+                            <span className="text-[10px] text-slate-500 block leading-tight">الشكل البصري المميز للصنف:</span>
+                            <span className="text-xs font-black" style={{ color: visual.primaryColor }}>
+                              {visual.shapeSymbol} {visual.shapeNameAr}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full border border-slate-200">
+                          {visual.colorNameAr}
+                        </span>
+                      </div>
+                    );
+                  })()}
+
                   <div className="flex justify-between items-center bg-white p-1.5 rounded-lg border border-slate-200">
                     <span className="text-slate-500 font-medium">كود الصنف:</span>
                     <span className="font-mono font-black text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">

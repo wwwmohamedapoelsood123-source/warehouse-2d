@@ -1,6 +1,8 @@
 import React from 'react';
 import { PendingMove } from '../types/warehouse';
 import { ArrowLeftRight, Trash2, Edit3, CheckCircle, XCircle, AlertCircle, ArrowRight } from 'lucide-react';
+import { ItemShapeBadge } from './ItemShapeBadge';
+import { getItemVisual } from '../utils/itemVisuals';
 
 interface PendingMovesProps {
   pendingMoves: PendingMove[];
@@ -111,9 +113,19 @@ export const PendingMoves: React.FC<PendingMovesProps> = ({
                     </span>
                   </td>
 
-                  {/* Item Code */}
-                  <td className="py-3 px-3 font-mono font-semibold text-slate-900">
-                    {move.itemCode}
+                  {/* Item Code with Distinct Shape */}
+                  <td className="py-3 px-3">
+                    <div className="flex items-center gap-1.5">
+                      <ItemShapeBadge
+                        itemCode={move.itemCode}
+                        description={move.description}
+                        size="sm"
+                        shapeOnly
+                      />
+                      <span className="font-mono font-bold text-slate-900">
+                        {move.itemCode}
+                      </span>
+                    </div>
                   </td>
 
                   {/* Description */}

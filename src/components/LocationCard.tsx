@@ -1,6 +1,8 @@
 import React from 'react';
 import { WarehouseLocation, MoveModeState } from '../types/warehouse';
 import { ArrowDownLeft, Box, Package, Check, Sparkles } from 'lucide-react';
+import { ItemShapeBadge } from './ItemShapeBadge';
+import { getItemVisual } from '../utils/itemVisuals';
 
 interface LocationCardProps {
   location: WarehouseLocation;
@@ -149,9 +151,15 @@ export const LocationCard: React.FC<LocationCardProps> = ({
       {isOccupied ? (
         <div className="flex-1 flex flex-col justify-between overflow-hidden relative z-10">
           
-          {/* Item Code with Box Icon */}
+          {/* Item Code with Distinct Geometric Shape Badge */}
           <div className="flex items-center justify-between gap-1">
-            <div className="flex items-baseline gap-1 truncate">
+            <div className="flex items-center gap-1.5 truncate">
+              <ItemShapeBadge
+                itemCode={location.itemCode}
+                description={location.description}
+                size="xs"
+                shapeOnly
+              />
               <span className={`text-[10px] font-semibold ${isSourceInMove ? 'text-blue-100' : 'text-slate-500'}`}>
                 كود:
               </span>

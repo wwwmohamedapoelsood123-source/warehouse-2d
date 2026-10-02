@@ -1,6 +1,8 @@
 import React from 'react';
 import { WarehouseLocation } from '../types/warehouse';
-import { X, MapPin, Package, FileText, CheckCircle2, CircleDashed, ArrowLeftRight, Layers } from 'lucide-react';
+import { X, MapPin, Package, FileText, CheckCircle2, CircleDashed, ArrowLeftRight, Layers, Shapes, Sparkles } from 'lucide-react';
+import { ItemShapeBadge } from './ItemShapeBadge';
+import { getItemVisual } from '../utils/itemVisuals';
 
 interface LocationDetailsModalProps {
   location: WarehouseLocation | null;
@@ -80,6 +82,37 @@ export const LocationDetailsModal: React.FC<LocationDetailsModalProps> = ({
           {isOccupied ? (
             <div className="space-y-3 border-t border-slate-100 pt-3">
               
+              {/* Distinct Geometric Shape Showcase */}
+              {(() => {
+                const visual = getItemVisual(location.itemCode, location.description);
+                return (
+                  <div className="p-3 rounded-xl border border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/40 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <ItemShapeBadge
+                        itemCode={location.itemCode}
+                        description={location.description}
+                        size="lg"
+                        shapeOnly
+                      />
+                      <div>
+                        <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
+                          <Shapes className="w-3.5 h-3.5 text-blue-600" />
+                          <span>الشكل الهندسي المخصص للصنف:</span>
+                        </span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <strong className="text-sm font-black" style={{ color: visual.primaryColor }}>
+                            {visual.shapeSymbol} {visual.shapeNameAr}
+                          </strong>
+                          <span className="text-xs text-slate-600 bg-white px-2 py-0.5 rounded-full border border-slate-200">
+                            {visual.colorNameAr}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               <div>
                 <label className="text-xs font-semibold text-slate-400 flex items-center gap-1.5 mb-1">
                   <Package className="w-3.5 h-3.5 text-slate-400" />

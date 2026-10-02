@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MoveHistoryRecord } from '../types/warehouse';
 import { History, Download, Trash2, Search, ArrowLeftRight, Calendar, Clock } from 'lucide-react';
 import { exportMoveHistoryToExcel } from '../utils/excelUtils';
+import { ItemShapeBadge } from './ItemShapeBadge';
 
 interface MoveHistoryProps {
   history: MoveHistoryRecord[];
@@ -152,8 +153,18 @@ export const MoveHistory: React.FC<MoveHistoryProps> = ({
                       {item.to}
                     </span>
                   </td>
-                  <td className="py-2.5 px-3 font-mono font-bold text-blue-900">
-                    {item.itemCode}
+                  <td className="py-2.5 px-3">
+                    <div className="flex items-center gap-1.5">
+                      <ItemShapeBadge
+                        itemCode={item.itemCode}
+                        description={item.description}
+                        size="xs"
+                        shapeOnly
+                      />
+                      <span className="font-mono font-bold text-slate-900">
+                        {item.itemCode}
+                      </span>
+                    </div>
                   </td>
                   <td className="py-2.5 px-3 text-slate-600 truncate max-w-sm">
                     {item.description || '—'}

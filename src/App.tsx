@@ -22,6 +22,7 @@ import {
 } from './utils/storage';
 import { exportWarehouseToExcel } from './utils/excelUtils';
 import { SAMPLE_LOCATIONS } from './utils/sampleData';
+import { getItemVisual } from './utils/itemVisuals';
 
 import { Header } from './components/Header';
 import { DashboardStats } from './components/DashboardStats';
@@ -141,13 +142,20 @@ export default function App() {
     });
   }, [locations, selectedZone, statusFilter]);
 
-  // Search validation check
+  // Search validation check (supports item code, description, and unique shape name)
   const itemNotFound = useMemo(() => {
     const query = itemSearchQuery.trim().toLowerCase();
     if (!query) return false;
-    return !locations.some(
-      (l) => l.itemCode && l.itemCode.toLowerCase().includes(query)
-    );
+    return !locations.some((l) => {
+      if (!l.itemCode || l.itemCode.trim() === '') return false;
+      const visual = getItemVisual(l.itemCode, l.description);
+      return (
+        l.itemCode.toLowerCase().includes(query) ||
+        (l.description && l.description.toLowerCase().includes(query)) ||
+        visual.shapeNameAr.toLowerCase().includes(query) ||
+        visual.colorNameAr.toLowerCase().includes(query)
+      );
+    });
   }, [itemSearchQuery, locations]);
 
   const locationNotFound = useMemo(() => {

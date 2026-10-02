@@ -54,7 +54,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               type="text"
               value={itemSearchQuery}
               onChange={(e) => setItemSearchQuery(e.target.value)}
-              placeholder="بحث عن الصنف بالكود (مثال: 10025)..."
+              placeholder="بحث عن الصنف بالكود، الوصف، أو شكل الصنف (سداسي، نجمة...)..."
               className={`w-full pr-9 pl-8 py-2 text-xs md:text-sm bg-slate-50 hover:bg-slate-100/70 focus:bg-white border rounded-lg transition-colors focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 font-mono ${
                 itemNotFound ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 focus:border-blue-500'
               }`}

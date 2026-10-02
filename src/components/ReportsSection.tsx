@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { WarehouseLocation, WarehouseStats, TopItemReport } from '../types/warehouse';
-import { BarChart3, TrendingUp, Layers, CheckCircle2, CircleDashed, Percent, Package2 } from 'lucide-react';
+import { BarChart3, TrendingUp, Layers, CheckCircle2, CircleDashed, Percent, Package2, Shapes } from 'lucide-react';
+import { ItemShapeBadge } from './ItemShapeBadge';
+import { getItemVisual } from '../utils/itemVisuals';
 
 interface ReportsSectionProps {
   locations: WarehouseLocation[];
@@ -141,36 +143,52 @@ export const ReportsSection: React.FC<ReportsSectionProps> = ({
               <thead>
                 <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold">
                   <th className="py-2.5 px-3 w-12 text-center">#</th>
+                  <th className="py-2.5 px-3">شكل الصنف</th>
                   <th className="py-2.5 px-3">كود الصنف (Item Code)</th>
                   <th className="py-2.5 px-3">وصف الصنف (Description)</th>
-                  <th className="py-2.5 px-3 text-center">عدد المواقع (Locations Count)</th>
+                  <th className="py-2.5 px-3 text-center">عدد المواقع</th>
                   <th className="py-2.5 px-3 text-center">نسبة الاستحواذ</th>
                   <th className="py-2.5 px-3">المواقع المشغولة</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {topItems.map((item, idx) => (
-                  <tr key={item.itemCode} className="hover:bg-blue-50/20 transition-colors">
-                    <td className="py-2.5 px-3 font-mono text-center text-slate-400">
-                      {idx + 1}
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <button
-                        onClick={() => onFilterByItemCode(item.itemCode)}
-                        className="font-mono font-bold text-blue-700 hover:text-blue-900 hover:underline cursor-pointer"
-                        title="تظليل مواقع هذا الصنف في الخريطة"
-                      >
-                        {item.itemCode}
-                      </button>
-                    </td>
-                    <td className="py-2.5 px-3 text-slate-800 font-medium max-w-sm truncate">
-                      {item.description || '—'}
-                    </td>
-                    <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-900 tabular-nums">
-                      <span className="bg-slate-100 px-2 py-0.5 rounded text-xs">
-                        {item.count}
-                      </span>
-                    </td>
+                {topItems.map((item, idx) => {
+                  const visual = getItemVisual(item.itemCode, item.description);
+                  return (
+                    <tr key={item.itemCode} className="hover:bg-blue-50/20 transition-colors">
+                      <td className="py-2.5 px-3 font-mono text-center text-slate-400">
+                        {idx + 1}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <div className="flex items-center gap-1.5">
+                          <ItemShapeBadge
+                            itemCode={item.itemCode}
+                            description={item.description}
+                            size="sm"
+                            shapeOnly
+                          />
+                          <span className="font-bold text-[11px]" style={{ color: visual.primaryColor }}>
+                            {visual.shapeNameAr}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <button
+                          onClick={() => onFilterByItemCode(item.itemCode)}
+                          className="font-mono font-bold text-blue-700 hover:text-blue-900 hover:underline cursor-pointer"
+                          title="تظليل مواقع هذا الصنف في الخريطة"
+                        >
+                          {item.itemCode}
+                        </button>
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-800 font-medium max-w-sm truncate">
+                        {item.description || '—'}
+                      </td>
+                      <td className="py-2.5 px-3 text-center font-mono font-bold text-slate-900 tabular-nums">
+                        <span className="bg-slate-100 px-2 py-0.5 rounded text-xs">
+                          {item.count}
+                        </span>
+                      </td>
                     <td className="py-2.5 px-3 text-center font-mono text-slate-600 tabular-nums">
                       {item.percentage.toFixed(1)}%
                     </td>
@@ -192,7 +210,8 @@ export const ReportsSection: React.FC<ReportsSectionProps> = ({
                       </div>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           </div>

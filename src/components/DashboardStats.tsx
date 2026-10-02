@@ -86,15 +86,18 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Unique Items */}
       <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex flex-col justify-between">
         <div className="flex items-center justify-between text-slate-500 mb-1">
-          <span className="text-xs font-medium">الأصناف المختلفة</span>
+          <span className="text-xs font-medium">الأصناف وأشكالها</span>
           <Package2 className="w-4 h-4 text-slate-400" />
         </div>
         <div className="flex items-baseline gap-1">
           <span className="text-2xl font-bold font-mono text-slate-900 tabular-nums">
             {stats.uniqueItems.toLocaleString('ar-EG')}
           </span>
-          <span className="text-xs text-slate-400">صنف</span>
+          <span className="text-xs text-slate-400">صنف/شكل</span>
         </div>
+        <span className="text-[10px] text-blue-700 font-bold mt-1 block">
+          لكل صنف شكل مميز ⬢ ◆ ★
+        </span>
       </div>
 
       {/* Pending Moves */}
