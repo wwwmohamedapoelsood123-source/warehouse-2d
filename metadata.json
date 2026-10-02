@@ -1,0 +1,8 @@
+{
+  "name": "Remix Warehouse 2D Location Manager",
+  "description": "تطبيق ويب سريع وبسيط لإدارة مواقع المخزن ثنائية الأبعاد، استيراد وتصدير ملفات Excel، البحث وتظليل الأصناف والأماكن، وتنفيذ حركات النقل الداخلي.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
